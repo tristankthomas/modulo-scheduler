@@ -81,9 +81,24 @@ class Scheduler:
 	Adds supersinks and supernodes to the CDFG and connects them to the existing nodes according the the conventions in the assignment
 	"""
 	def add_artificial_nodes(self):
-		#output to terminal that this is the next function to implement
-		self.log.error("The add_artificial_nodes member function in src/main_flow/scheduler.py has not yet been implemented")
-		self.log.info("Exiting early due to an unimplemented function")
+		
+		# adding a supersink and supersource for each bb in graph
+		for bb in self.cfg:
+			numericBBID = bb.attr["id"]
+			bbLabel = bb.attr["label"]
+			supersource_name = f"ssrc_{numericBBID}"
+			supersink_name = f"ssink_{numericBBID}"
+			self.cdfg.add_node(supersource_name, id=numericBBID, bbID=bbLabel, type="supersource", label=supersource_name)
+			self.cdfg.add_node(supersink_name, id=numericBBID, bbID=bbLabel, type="supersink", label=supersink_name)
+
+
+		# creating edges
+		for node in self.cdfg:
+			if self.shouldBeConnectedToSupersource(node) and "ssrc" not in node.attr["label"]:
+				self.cdfg.add_edge(f"ssrc_{node.attr['id']}", node)
+			if self.shouldBeConnectedToSupersink(node) and "ssink" not in node.attr["label"]:
+				self.cdfg.add_edge(node, f"ssink_{node.attr['id']}")
+				
 
 		#draw the cdfg for testing your code in task 1
 		self.cdfg.layout(prog='dot')
@@ -91,6 +106,15 @@ class Scheduler:
 	
 		#end the program here until you're ready to start task 2
 		quit()
+
+	def shouldBeConnectedToSupersource(self, node):
+		preds = [pred for pred in self.cdfg.in_neighbors(node) if pred.attr["id"] == node.attr["id"]]
+		return len(preds) == 0
+	
+	def shouldBeConnectedToSupersink(self, node):
+		preds = [pred for pred in self.cdfg.out_neighbors(node) if pred.attr["id"] == node.attr["id"]]
+		return len(preds) == 0
+
 
 	"""
 	Adds the scheduling variable of each node in the CDFG to the ILP formulation.
