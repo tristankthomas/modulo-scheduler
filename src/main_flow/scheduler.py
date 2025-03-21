@@ -108,12 +108,16 @@ class Scheduler:
 		quit()
 
 	def shouldBeConnectedToSupersource(self, node):
-		preds = [pred for pred in self.cdfg.in_neighbors(node) if pred.attr["id"] == node.attr["id"]]
+		preds = [pred for pred in self.cdfg.in_neighbors(node) 
+				if pred.attr["id"] == node.attr["id"] and 
+					self.cdfg.get_edge(pred, node).attr["style"] != "dashed"]
 		return len(preds) == 0
 	
 	def shouldBeConnectedToSupersink(self, node):
-		preds = [pred for pred in self.cdfg.out_neighbors(node) if pred.attr["id"] == node.attr["id"]]
-		return len(preds) == 0
+		succs = [succ for succ in self.cdfg.out_neighbors(node) 
+		   		if succ.attr["id"] == node.attr["id"] and
+		   			self.cdfg.get_edge(node, succ).attr["style"] != "dashed"]
+		return len(succs) == 0
 
 
 	"""
