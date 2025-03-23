@@ -134,26 +134,31 @@ class Scheduler:
 	Adds data dependency constraints to the scheduler object's constraint set based on the edges between CDFG nodes.
 	"""
 	def set_data_dependency_constraints(self):
-		
-		quit()
+
+		inequality_sign = "geq"
+		for nodeA in self.cdfg:
+			rhs = get_node_latency(nodeA.attr)
+			for nodeB in self.cdfg.out_neighbors(nodeA):
+				# schedule so that A always finishes before B starts (sv(B) - sv(A) >= Lat)
+				lhs_dictionary = {f"sv{nodeA}": -1, f"sv{nodeB}": 1}
+				self.constraints.add_constraint(lhs_dictionary, inequality_sign, rhs)
+				
 
 	"""
 	Adds the constraints needed to allow minimizing the ASAP objective function to produce a valid result.
 	"""
 	def create_asap_scheduling_ilp(self):
-		#output to terminal that this is the next function to implement
-		self.log.error("The create_asap_scheduling_ilp member function in src/main_flow/scheduler.py has not yet been implemented")
-		self.log.info("Exiting early due to an unimplemented function")
-		quit()
+		
+		self.set_data_dependency_constraints()
 
 	"""
 	Adds terms to the objective function with coefficients that will ensure each node is scheduled ASAP.
 	"""
 	def set_asap_objective_function(self):
-		#output to terminal that this is the next function to implement
-		self.log.error("The set_asap_objective_function member function in src/main_flow/scheduler.py has not yet been implemented")
-		self.log.info("Exiting early due to an unimplemented function")
-		quit()
+		# positive constant coeff as want to minimise start times (ASAP)
+		coeff = 1
+		for node in self.cdfg:
+			self.obj_fun.add_variable(f"sv{node}", coeff)
 
 	"""
 	Returns the sv of each BB's supersink in the form of a dictionary/list
