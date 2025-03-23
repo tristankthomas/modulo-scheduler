@@ -168,10 +168,12 @@ class Scheduler:
 	Returns the sv of each BB's supersink in the form of a dictionary/list
 	"""
 	def get_sink_svs(self):
-		#output to terminal that this is the next function to implement
-		self.log.error("The get_sink_svs member function in src/main_flow/scheduler.py has not yet been implemented")
-		self.log.info("Exiting early due to an unimplemented function")
-		quit()
+		svs = {}
+		for node in self.cdfg:
+			if "ssink" in node.attr["label"]:
+				svs[node] = self.ilp.get_operation_timing_solution(node)
+
+		return svs
 
 	"""
 	Sets maximum sv constraints for each BB according to values passed to in in a dictionary, intended for ALAP
@@ -179,28 +181,30 @@ class Scheduler:
 	@param sink_svs: a dictionary containing an identifier for a BB and a corresponding maximum sv
 	"""
 	def add_sink_sv_constraints(self, sink_svs):
-		#output to terminal that this is the next function to implement
-		self.log.error("The add_sink_sv_constraints member function in src/main_flow/scheduler.py has not yet been implemented")
-		self.log.info("Exiting early due to an unimplemented function")
-		quit()
-
+		inequality_sign = "leq"
+		for node in self.cdfg:
+			if "ssink" in node.attr["label"]:
+				lhs_dictionary = {f"sv{node}": 1}
+				rhs = sink_svs[node]
+				self.constraints.add_constraint(lhs_dictionary, inequality_sign, rhs)
+		
+					
+				
 	"""
 	Adds the constraints needed to allow minimizing the ALAP objective function to produce a valid result.
 	"""
 	def create_alap_scheduling_ilp(self, sink_svs):
-		#output to terminal that this is the next function to implement
-		self.log.error("The create_alap_scheduling_ilp member function in src/main_flow/scheduler.py has not yet been implemented")
-		self.log.info("Exiting early due to an unimplemented function")
-		quit()
+		self.set_data_dependency_constraints()
+		self.add_sink_sv_constraints(sink_svs)
 
 	"""
 	Adds terms to the objective function with coefficients that will ensure each node is scheduled ALAP.
 	"""
 	def set_alap_objective_function(self):
-		#output to terminal that this is the next function to implement
-		self.log.error("The set_alap_objective_function member function in src/main_flow/scheduler.py has not yet been implemented")
-		self.log.info("Exiting early due to an unimplemented function")
-		quit()
+		# positive constant coeff as want to minimise start times (ALAP)
+		coeff = -1
+		for node in self.cdfg:
+			self.obj_fun.add_variable(f"sv{node}", coeff)
 
 	"""
 	Adds constraints that enforce inter-iteration data dependencies
