@@ -140,9 +140,13 @@ class Scheduler:
 			rhs = get_node_latency(nodeA.attr)
 			for nodeB in self.cdfg.out_neighbors(nodeA):
 				# schedule so that A always finishes before B starts (sv(B) - sv(A) >= Lat)
-				lhs_dictionary = {f"sv{nodeA}": -1, f"sv{nodeB}": 1}
-				self.constraints.add_constraint(lhs_dictionary, inequality_sign, rhs)
+				if self.in_same_bb(nodeA, nodeB):
+					lhs_dictionary = {f"sv{nodeA}": -1, f"sv{nodeB}": 1}
+					self.constraints.add_constraint(lhs_dictionary, inequality_sign, rhs)
 				
+
+	def in_same_bb(self, nodeA, nodeB):
+		return nodeA.attr["id"] == nodeB.attr["id"]
 
 	"""
 	Adds the constraints needed to allow minimizing the ASAP objective function to produce a valid result.
