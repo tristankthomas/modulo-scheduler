@@ -103,9 +103,6 @@ class Scheduler:
 		#draw the cdfg for testing your code in task 1
 		self.cdfg.layout(prog='dot')
 		self.cdfg.draw('output.pdf')
-	
-		#end the program here until you're ready to start task 2
-		quit()
 
 	def shouldBeConnectedToSupersource(self, node):
 		preds = [pred for pred in self.cdfg.in_neighbors(node) 
@@ -124,19 +121,20 @@ class Scheduler:
 	Adds the scheduling variable of each node in the CDFG to the ILP formulation.
 	"""
 	def add_nodes_to_ilp(self):
-		#output to terminal that this is the next function to implement
-		self.log.error("The add_nodes_to_ilp member function in src/main_flow/scheduler.py has not yet been implemented")
-		self.log.info("Exiting early due to an unimplemented function")
-		quit()
+		
+		for node in self.cdfg:
+			if "ssrc" in node.attr["label"]:
+				self.ilp.add_variable(f"sv{node}", lower_bound=0, var_type="i")
+			else:
+				self.ilp.add_variable(f"sv{node}", var_type="i")
+
+		
 
 	"""
 	Adds data dependency constraints to the scheduler object's constraint set based on the edges between CDFG nodes.
 	"""
 	def set_data_dependency_constraints(self):
-		#You must write both the implementation and the call of this function. 
-
-		self.log.error("The set_data_dependency_constraints member function in src/main_flow/scheduler.py has not yet been implemented")
-		self.log.info("Exiting early due to an unimplemented function")
+		
 		quit()
 
 	"""
