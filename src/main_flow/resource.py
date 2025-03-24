@@ -82,11 +82,17 @@ class Resource_Manager:
 	def check_resource_constraints_pipelined(self, resource_dict, II):
 		self.check_resource_dict(resource_dict)
 
-		#output to terminal that this is the next function to implement
-		self.log.error("The check_resource_constraints_pipelined member function in src/main_flow/resources.py has not yet been implemented")
-		self.log.info("Exiting early due to an unimplemented function")
-		quit()
+		mrt = defaultdict(list)
+		for node in self.cdfg:
+			columnIndex = self.ilp.get_operation_timing_solution(node) % II
+			mrt[columnIndex].append(node.attr["type"])
 
+		for res, constraint in resource_dict.items():
+			for ops in mrt.values():
+				if ops.count(res) > constraint:
+					return False
+
+		return True
 
 	"""
 	Checks the types specified in the given resource dictionary(a dictionary containing something like "bogusoperationtype" wouldn't be valid) and sets the resource_dic member variable of the class to the specified resource dictionary
