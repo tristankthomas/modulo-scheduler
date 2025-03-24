@@ -94,9 +94,9 @@ class Scheduler:
 
 		# creating edges
 		for node in self.cdfg:
-			if self.shouldBeConnectedToSupersource(node) and "ssrc" not in node.attr["label"]:
+			if self.shouldBeConnectedToSupersource(node) and "supersource" != node.attr["type"]:
 				self.cdfg.add_edge(f"ssrc_{node.attr['id']}", node)
-			if self.shouldBeConnectedToSupersink(node) and "ssink" not in node.attr["label"]:
+			if self.shouldBeConnectedToSupersink(node) and "supersink" != node.attr["type"]:
 				self.cdfg.add_edge(node, f"ssink_{node.attr['id']}")
 				
 
@@ -123,7 +123,7 @@ class Scheduler:
 	def add_nodes_to_ilp(self):
 		
 		for node in self.cdfg:
-			if "ssrc" in node.attr["label"]:
+			if "supersource" == node.attr["type"]:
 				self.ilp.add_variable(f"sv{node}", lower_bound=0, var_type="i")
 			else:
 				self.ilp.add_variable(f"sv{node}", var_type="i")
@@ -170,7 +170,7 @@ class Scheduler:
 	def get_sink_svs(self):
 		svs = {}
 		for node in self.cdfg:
-			if "ssink" in node.attr["label"]:
+			if "supersink" == node.attr["type"]:
 				svs[node] = self.ilp.get_operation_timing_solution(node)
 
 		return svs
@@ -183,7 +183,7 @@ class Scheduler:
 	def add_sink_sv_constraints(self, sink_svs):
 		inequality_sign = "leq"
 		for node in self.cdfg:
-			if "ssink" in node.attr["label"]:
+			if "supersink" == node.attr["type"]:
 				lhs_dictionary = {f"sv{node}": 1}
 				rhs = sink_svs[node]
 				self.constraints.add_constraint(lhs_dictionary, inequality_sign, rhs)

@@ -54,11 +54,7 @@ class Resource_Manager:
 	def add_resource_constraints(self, resource_dict):
 		self.check_resource_dict(resource_dict)
 
-		#output to terminal that this is the next function to implement
-		self.log.error("The add_resource_constraints member function in src/main_flow/resources.py has not yet been implemented")
-		self.log.info("Exiting early due to an unimplemented function")
-
-		quit()
+		
 
 	# function to add resources constraints for pipelined scheduling
 	def check_resource_constraints_pipelined(self, resource_dict, II):
