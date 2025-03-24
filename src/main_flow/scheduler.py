@@ -107,16 +107,19 @@ class Scheduler:
 	def shouldBeConnectedToSupersource(self, node):
 		preds = [pred for pred in self.cdfg.in_neighbors(node) 
 				if pred.attr["id"] == node.attr["id"] and 
-					self.cdfg.get_edge(pred, node).attr["style"] != "dashed"]
+					not self.isBackEdge(pred, node)]
 		return len(preds) == 0
 	
 	def shouldBeConnectedToSupersink(self, node):
 		succs = [succ for succ in self.cdfg.out_neighbors(node) 
 		   		if succ.attr["id"] == node.attr["id"] and
-		   			self.cdfg.get_edge(node, succ).attr["style"] != "dashed"]
+		   			not self.isBackEdge(node, succ)]
 		return len(succs) == 0
 
 
+	def isBackEdge(self, node, succ):
+		return self.cdfg.get_edge(node, succ).attr["style"] == "dashed"
+	
 	"""
 	Adds the scheduling variable of each node in the CDFG to the ILP formulation.
 	"""
@@ -140,7 +143,7 @@ class Scheduler:
 			rhs = get_node_latency(nodeA.attr)
 			for nodeB in self.cdfg.out_neighbors(nodeA):
 				# schedule so that A always finishes before B starts (sv(B) - sv(A) >= Lat)
-				if self.in_same_bb(nodeA, nodeB):
+				if self.in_same_bb(nodeA, nodeB) and not self.isBackEdge(nodeA, nodeB):
 					lhs_dictionary = {f"sv{nodeA}": -1, f"sv{nodeB}": 1}
 					self.constraints.add_constraint(lhs_dictionary, inequality_sign, rhs)
 				
@@ -212,29 +215,35 @@ class Scheduler:
 	@param II: the II value for writing the inter-iteration data dependencies.
 	"""
 	def set_pipelining_constraints(self, II):
-		#You must write both the implementation and the call of this function. 
-
-		self.log.error("The set_pipelining_constraints member function in src/main_flow/scheduler.py has not yet been implemented")
-		self.log.info("Exiting early due to an unimplemented function")
-		quit()
+		inequality_sign = "leq"
+		for node in self.cdfg:
+			latency = get_node_latency(node.attr)
+			for succ in self.cdfg.out_neighbors(node):
+				if self.isBackEdge(node, succ):
+					rhs = II - latency
+					lhs_dictionary = {f"sv{node}": 1, f"sv{succ}": -1}
+					self.constraints.add_constraint(lhs_dictionary, inequality_sign, rhs)
 
 	"""
 	Adds the constraints needed to allow minimizing the ALAP objective function to produce a valid result.
 	"""
 	def create_pipelined_scheduling_ilp(self, II):
-		#output to terminal that this is the next function to implement
-		self.log.error("The create_pipelined_scheduling_ilp member function in src/main_flow/scheduler.py has not yet been implemented")
-		self.log.info("Exiting early due to an unimplemented function")
-		quit()
+		self.set_data_dependency_constraints()
+		self.set_pipelining_constraints(II)
+
 
 	"""
 	Returns the numeric id of the BB to be pipelined
 	"""
 	def find_loop_bb(self):
-		#output to terminal that this is the next function to implement
-		self.log.error("The find_loop_bb member function in src/main_flow/scheduler.py has not yet been implemented")
-		self.log.info("Exiting early due to an unimplemented function")
-		quit()
+		self.create_scheduling_ilp()
+		self.ilp.get_ilp_solution()
+
+		sink_svs = self.get_sink_svs()
+		max_key = max(sink_svs, key=sink_svs.get)
+		
+		return max_key
+
 
 
 #### DO NOT TOUCH FROM THIS LINE ####
