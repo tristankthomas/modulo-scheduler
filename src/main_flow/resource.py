@@ -1,6 +1,7 @@
 from src.utilities.ilp_manager import *
 from src.utilities.cdfg_manager import *
 import logging
+from collections import defaultdict
 
 ############################################################################################################################################
 ############################################################################################################################################
@@ -52,7 +53,28 @@ class Resource_Manager:
 	Adds constraints to the constraint set that enforce the resource constraints contained in the resource dictionary
 	"""
 	def add_resource_constraints(self, resource_dict):
+		inequality_sign = "geq"
 		self.check_resource_dict(resource_dict)
+
+		sorted_nodes = get_topological_order(self.cdfg)
+		bbs_dict = defaultdict(list)
+		for node in sorted_nodes:
+			bbs_dict[node.attr["id"]].append(node)
+		bbs = list(bbs_dict.values())
+
+		for res in resource_dict.keys():
+			for bb in bbs:
+				# extract just the restricted resource
+				constraint = resource_dict[res]
+				nodes = [node for node in bb if res == node.attr["type"]]
+
+				for i, nodeA in enumerate(nodes):
+					index = i + constraint
+					if index < len(nodes):
+						nodeB = nodes[index]
+						lhs_dictionary = {f"sv{nodeA}": -1, f"sv{nodeB}": 1}
+						rhs = 1
+						self.constraints.add_constraint(lhs_dictionary, inequality_sign, rhs)
 
 		
 
