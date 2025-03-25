@@ -236,13 +236,11 @@ class Scheduler:
 	Returns the numeric id of the BB to be pipelined
 	"""
 	def find_loop_bb(self):
-		self.create_scheduling_ilp()
-		self.ilp.get_ilp_solution()
 
 		sink_svs = self.get_sink_svs()
-		max_key = max(sink_svs, key=sink_svs.get)
+		max_node = max(sink_svs, key=sink_svs.get)
 		
-		return max_key
+		return max_node.attr["id"]
 
 
 
