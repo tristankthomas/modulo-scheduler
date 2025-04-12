@@ -81,9 +81,10 @@ class Resource_Manager:
 	# function to add resources constraints for pipelined scheduling
 	def check_resource_constraints_pipelined(self, resource_dict, II):
 		self.check_resource_dict(resource_dict)
+		nodes = [n for n in get_cdfg_nodes(self.cdfg) if n.attr['id'] == str(self.find_loop_bb())]
 
 		mrt = defaultdict(list)
-		for node in self.cdfg:
+		for node in nodes:
 			columnIndex = self.ilp.get_operation_timing_solution(node) % II
 			mrt[columnIndex].append(node.attr["type"])
 
@@ -93,6 +94,23 @@ class Resource_Manager:
 					return False
 
 		return True
+	
+	def get_sink_svs(self):
+		svs = {}
+		for node in self.cdfg:
+			if "supersink" == node.attr["type"]:
+				svs[node] = self.ilp.get_operation_timing_solution(node)
+
+		return svs
+	
+
+	def find_loop_bb(self):
+
+		sink_svs = self.get_sink_svs()
+		max_node = max(sink_svs, key=sink_svs.get)
+		
+		return max_node.attr["id"]
+
 
 	"""
 	Checks the types specified in the given resource dictionary(a dictionary containing something like "bogusoperationtype" wouldn't be valid) and sets the resource_dic member variable of the class to the specified resource dictionary
