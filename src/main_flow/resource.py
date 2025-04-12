@@ -67,7 +67,7 @@ class Resource_Manager:
 				# extract just the restricted resource
 				constraint = resource_dict[res]
 				nodes = [node for node in bb if res == node.attr["type"]]
-
+				nodes.sort(key=lambda node: "inc" not in node)
 				for i, nodeA in enumerate(nodes):
 					index = i + constraint
 					if index < len(nodes):
