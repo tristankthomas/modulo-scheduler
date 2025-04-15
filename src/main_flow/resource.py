@@ -58,15 +58,19 @@ class Resource_Manager:
 
 		sorted_nodes = get_topological_order(self.cdfg)
 		bbs_dict = defaultdict(list)
+		# seperate nodes into bbs
 		for node in sorted_nodes:
 			bbs_dict[node.attr["id"]].append(node)
+		
 		bbs = list(bbs_dict.values())
 
 		for res in resource_dict.keys():
 			for bb in bbs:
 				# extract just the restricted resource
 				constraint = resource_dict[res]
+				# filter nodes by resource
 				nodes = [node for node in bb if res == node.attr["type"]]
+				# prioritise loop adders
 				nodes.sort(key=lambda node: "inc" not in node)
 				for i, nodeA in enumerate(nodes):
 					index = i + constraint
@@ -81,15 +85,18 @@ class Resource_Manager:
 	# function to add resources constraints for pipelined scheduling
 	def check_resource_constraints_pipelined(self, resource_dict, II):
 		self.check_resource_dict(resource_dict)
+		# extract loop bb nodes only
 		nodes = [n for n in get_cdfg_nodes(self.cdfg) if n.attr['id'] == str(self.find_loop_bb())]
 
 		mrt = defaultdict(list)
+		# add nodes to mrt
 		for node in nodes:
 			columnIndex = self.ilp.get_operation_timing_solution(node) % II
 			mrt[columnIndex].append(node.attr["type"])
 
 		for res, constraint in resource_dict.items():
 			for ops in mrt.values():
+				# check if constraint is satisfied or not
 				if ops.count(res) > constraint:
 					return False
 

@@ -219,6 +219,7 @@ class Scheduler:
 		for node in self.cdfg:
 			latency = get_node_latency(node.attr)
 			for succ in self.cdfg.out_neighbors(node):
+				# add pipeling constraint
 				if self.isBackEdge(node, succ):
 					rhs = II - latency
 					lhs_dictionary = {f"sv{node}": 1, f"sv{succ}": -1}
